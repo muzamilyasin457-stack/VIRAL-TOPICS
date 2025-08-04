@@ -64,7 +64,7 @@ if st.button("🚀 Find Trending Business Topics"):
                 # Fetch video and channel stats
                 stats_data = requests.get(
                     YOUTUBE_VIDEO_URL,
-                    params={"part": "statistics", "id": ",".join(video_ids), "key": API_KEY}
+                    params={"part": "statistics,contentDetails", "id": ",".join(video_ids), "key": API_KEY}
                 ).json()
 
                 channel_data = requests.get(
@@ -85,7 +85,12 @@ if st.button("🚀 Find Trending Business Topics"):
                     views = int(stat["statistics"].get("viewCount", 0))
                     subs = int(channel_info.get("statistics", {}).get("subscriberCount", 0))
 
-                    if 1000 <= views and 1000 <= subs <= 500000:
+                    # Convert ISO 8601 duration to seconds
+                    import isodate
+                    duration = isodate.parse_duration(stat["contentDetails"]["duration"])
+                    duration_minutes = duration.total_seconds() / 60
+
+                    if duration_minutes >= 2 and 1000 <= views and 1000 <= subs <= 500000:
                         all_results.append({
                             "Title": title,
                             "Description": description,
