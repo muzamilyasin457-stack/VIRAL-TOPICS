@@ -9,109 +9,104 @@ YOUTUBE_VIDEO_URL = "https://www.googleapis.com/youtube/v3/videos"
 YOUTUBE_CHANNEL_URL = "https://www.googleapis.com/youtube/v3/channels"
 
 # App Title
-st.title("📊 YouTube Viral Topic Finder (Auto-Keyword Generator)")
+st.title("\ud83d\udcca YouTube Viral Topic Finder (Business + English Only)")
 
 # Inputs
-niche = st.text_input("🎯 Enter Your Niche (or leave empty for broad topics):")
-days = st.number_input("🗓️ Enter Days to Search (1-30):", min_value=1, max_value=30, value=5)
+niche = st.text_input("\ud83c\udfaf Enter Your Business Niche (e.g. 'AI Business', 'Startup Collapse'):")
+days = st.number_input("\ud83d\uddd3\ufe0f Enter Days to Search (1-30):", min_value=1, max_value=30, value=5)
 
-# Broad fallback keywords
-broad_keywords = [
-    "AI Scandal", "Tech Collapse", "Startup Failure", "AI vs Human",
-    "Big Tech Exposed", "Silicon Valley Secrets", "Artificial Intelligence Debate",
-    "Future of Tech", "Tech Industry Crisis", "AI Dangers", "Tech War",
-    "Latest AI News", "Hidden Tech Truths", "Controversial AI Update",
-    "AI Replacing Jobs", "Tech Documentary", "Tech Conspiracy",
-    "Unbelievable Tech Truth", "AI Gone Wrong", "Corporate Collapse"
-]
-
-# Generate keywords from niche
+# Keyword Generator
 def generate_keywords(niche):
-    base_phrases = [
-        "latest news", "controversy", "explained", "war", "scandal",
-        "rise and fall", "power shift", "collapse", "drama", "future",
-        "takeover", "business war", "strategy", "leadership", "AI impact"
+    business_phrases = [
+        "business war", "company drama", "tech collapse", "startup fail", 
+        "AI impact", "leadership change", "controversy explained", 
+        "big tech scandal", "power shift", "corporate news", "industry insights",
+        "executive drama", "market takeover", "business rivalry"
     ]
-    return [f"{niche} {phrase}" for phrase in base_phrases]
+    return [f"{niche} {phrase}" for phrase in business_phrases]
 
-# Search Button
-if st.button("🚀 Find Trending Topics"):
-    try:
-        keywords = generate_keywords(niche) if niche else broad_keywords
-        start_date = (datetime.utcnow() - timedelta(days=int(days))).isoformat("T") + "Z"
-        all_results = []
+# Main Function
+if st.button("\ud83d\ude80 Find Trending Topics"):
+    if not niche:
+        st.warning("Please enter a niche to continue.")
+    else:
+        try:
+            keywords = generate_keywords(niche)
+            start_date = (datetime.utcnow() - timedelta(days=int(days))).isoformat("T") + "Z"
+            all_results = []
 
-        for keyword in keywords:
-            st.write(f"🔍 Searching: {keyword}")
+            for keyword in keywords:
+                st.write(f"\ud83d\udd0d Searching: {keyword}")
 
-            search_params = {
-                "part": "snippet",
-                "q": keyword,
-                "type": "video",
-                "order": "viewCount",
-                "publishedAfter": start_date,
-                "maxResults": 5,
-                "key": API_KEY,
-            }
+                search_params = {
+                    "part": "snippet",
+                    "q": keyword,
+                    "type": "video",
+                    "order": "viewCount",
+                    "publishedAfter": start_date,
+                    "maxResults": 5,
+                    "key": API_KEY,
+                    "relevanceLanguage": "en",     # \ud83d\udd11 Only English
+                    "safeSearch": "strict"         # Optional: avoids unrelated content
+                }
 
-            response = requests.get(YOUTUBE_SEARCH_URL, params=search_params)
-            data = response.json()
+                response = requests.get(YOUTUBE_SEARCH_URL, params=search_params)
+                data = response.json()
 
-            if "items" not in data or not data["items"]:
-                continue
+                if "items" not in data or not data["items"]:
+                    continue
 
-            videos = data["items"]
-            video_ids = [v["id"]["videoId"] for v in videos if "id" in v and "videoId" in v["id"]]
-            channel_ids = [v["snippet"]["channelId"] for v in videos if "snippet" in v and "channelId" in v["snippet"]]
+                videos = data["items"]
+                video_ids = [v["id"]["videoId"] for v in videos if "id" in v and "videoId" in v["id"]]
+                channel_ids = [v["snippet"]["channelId"] for v in videos if "snippet" in v and "channelId" in v["snippet"]]
 
-            if not video_ids or not channel_ids:
-                continue
+                if not video_ids or not channel_ids:
+                    continue
 
-            # Fetch stats
-            stats_data = requests.get(
-                YOUTUBE_VIDEO_URL,
-                params={"part": "statistics", "id": ",".join(video_ids), "key": API_KEY}
-            ).json()
+                stats_data = requests.get(
+                    YOUTUBE_VIDEO_URL,
+                    params={"part": "statistics", "id": ",".join(video_ids), "key": API_KEY}
+                ).json()
 
-            channel_data = requests.get(
-                YOUTUBE_CHANNEL_URL,
-                params={"part": "statistics", "id": ",".join(channel_ids), "key": API_KEY}
-            ).json()
+                channel_data = requests.get(
+                    YOUTUBE_CHANNEL_URL,
+                    params={"part": "statistics", "id": ",".join(channel_ids), "key": API_KEY}
+                ).json()
 
-            stats = stats_data.get("items", [])
-            channels = {item["id"]: item for item in channel_data.get("items", [])}
+                stats = stats_data.get("items", [])
+                channels = {item["id"]: item for item in channel_data.get("items", [])}
 
-            for video, stat in zip(videos, stats):
-                vid = video["id"]["videoId"]
-                channel_id = video["snippet"]["channelId"]
-                channel_info = channels.get(channel_id, {})
-                title = video["snippet"].get("title", "N/A")
-                description = video["snippet"].get("description", "")[:200]
-                video_url = f"https://www.youtube.com/watch?v={vid}"
-                views = int(stat["statistics"].get("viewCount", 0))
-                subs = int(channel_info.get("statistics", {}).get("subscriberCount", 0))
+                for video, stat in zip(videos, stats):
+                    vid = video["id"]["videoId"]
+                    channel_id = video["snippet"]["channelId"]
+                    channel_info = channels.get(channel_id, {})
+                    title = video["snippet"].get("title", "N/A")
+                    description = video["snippet"].get("description", "")[:200]
+                    video_url = f"https://www.youtube.com/watch?v={vid}"
+                    views = int(stat["statistics"].get("viewCount", 0))
+                    subs = int(channel_info.get("statistics", {}).get("subscriberCount", 0))
 
-                all_results.append({
-                    "Title": title,
-                    "Description": description,
-                    "URL": video_url,
-                    "Views": views,
-                    "Subscribers": subs,
-                    "Channel ID": channel_id
-                })
+                    all_results.append({
+                        "Title": title,
+                        "Description": description,
+                        "URL": video_url,
+                        "Views": views,
+                        "Subscribers": subs,
+                        "Channel ID": channel_id
+                    })
 
-        if all_results:
-            st.success(f"✅ Found {len(all_results)} videos for niche: {niche or 'General Viral Topics'}")
-            for result in all_results:
-                st.markdown(
-                    f"**🎬 Title:** {result['Title']}  \n"
-                    f"**📝 Description:** {result['Description']}  \n"
-                    f"**🔗 URL:** [Watch Video]({result['URL']})  \n"
-                    f"👁️ **Views:** {result['Views']:,} &nbsp;&nbsp; 👥 **Subscribers:** {result['Subscribers']:,}"
-                )
-                st.write("---")
-        else:
-            st.warning("⚠️ No viral videos found for this niche.")
+            if all_results:
+                st.success(f"\u2705 Found {len(all_results)} trending business videos!")
+                for result in all_results:
+                    st.markdown(
+                        f"**\ud83c\udfac Title:** {result['Title']}  \n"
+                        f"**\ud83d\udcdd Description:** {result['Description']}  \n"
+                        f"**\ud83d\udd17 URL:** [Watch Video]({result['URL']})  \n"
+                        f"\ud83d\udc41\ufe0f Views:** {result['Views']} &nbsp;&nbsp; \ud83d\udc65 **Subscribers:** {result['Subscribers']:,}"
+                    )
+                    st.write("---")
+            else:
+                st.warning("\ud83d\udeab No trending business videos found for this niche. Try a broader topic!")
 
-    except Exception as e:
-        st.error(f"❌ Error: {e}")
+        except Exception as e:
+            st.error(f"\u274c Error: {e}")
