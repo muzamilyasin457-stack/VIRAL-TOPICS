@@ -12,7 +12,7 @@ YOUTUBE_CHANNEL_URL = "https://www.googleapis.com/youtube/v3/channels"
 st.title("📈 YouTube Viral Business Topic Finder (English Only, Long Form)")
 
 # Inputs
-# niche = st.text_input("🎯 Enter a Specific Business Niche (e.g. 'Startup Collapse', 'Tech CEO Drama', 'Adobe AI Scandal'):")
+ niche = st.text_input("🎯 Enter a Specific Business Niche (e.g. 'Startup Collapse', 'Tech CEO Drama', 'Adobe AI Scandal'):")
 days = st.number_input("🗓️ Enter Days to Search (1-30):", min_value=1, max_value=30, value=5)
 
 # Enhanced business keywords
