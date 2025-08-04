@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import streamlit as st
 import requests
 from datetime import datetime, timedelta
@@ -9,26 +10,25 @@ YOUTUBE_VIDEO_URL = "https://www.googleapis.com/youtube/v3/videos"
 YOUTUBE_CHANNEL_URL = "https://www.googleapis.com/youtube/v3/channels"
 
 # App Title
-st.title("\ud83d\udcca YouTube Viral Topic Finder (Business + English Only)")
+st.title("YouTube Viral Topic Finder (Business + English Only)")
 
-# Inputs
-niche = st.text_input("\ud83c\udfaf Enter Your Business Niche (e.g. 'AI Business', 'Startup Collapse'):")
-days = st.number_input("\ud83d\uddd3\ufe0f Enter Days to Search (1-30):", min_value=1, max_value=30, value=5)
+# Input
+niche = st.text_input("Enter Your Business Niche (e.g. AI, Startup, Tech Collapse):")
+days = st.number_input("Enter Days to Search (1-30):", min_value=1, max_value=30, value=5)
 
-# Keyword Generator
+# Generate smart business-related keywords
 def generate_keywords(niche):
-    business_phrases = [
-        "business war", "company drama", "tech collapse", "startup fail", 
-        "AI impact", "leadership change", "controversy explained", 
-        "big tech scandal", "power shift", "corporate news", "industry insights",
-        "executive drama", "market takeover", "business rivalry"
+    base_phrases = [
+        "business news", "startup collapse", "company drama", "tech layoffs",
+        "business strategy", "founder scandal", "AI business", "corporate downfall",
+        "CEO controversy", "Silicon Valley news", "tech company collapse",
+        "business takeover", "AI startup", "big tech monopoly", "VC failure"
     ]
-    return [f"{niche} {phrase}" for phrase in business_phrases]
+    return [f"{niche} {phrase}" for phrase in base_phrases]
 
-# Main Function
-if st.button("\ud83d\ude80 Find Trending Topics"):
+if st.button("Find Trending Business Videos"):
     if not niche:
-        st.warning("Please enter a niche to continue.")
+        st.warning("Please enter a business niche to continue.")
     else:
         try:
             keywords = generate_keywords(niche)
@@ -36,7 +36,7 @@ if st.button("\ud83d\ude80 Find Trending Topics"):
             all_results = []
 
             for keyword in keywords:
-                st.write(f"\ud83d\udd0d Searching: {keyword}")
+                st.write(f"Searching: {keyword}")
 
                 search_params = {
                     "part": "snippet",
@@ -45,9 +45,8 @@ if st.button("\ud83d\ude80 Find Trending Topics"):
                     "order": "viewCount",
                     "publishedAfter": start_date,
                     "maxResults": 5,
+                    "relevanceLanguage": "en",
                     "key": API_KEY,
-                    "relevanceLanguage": "en",     # \ud83d\udd11 Only English
-                    "safeSearch": "strict"         # Optional: avoids unrelated content
                 }
 
                 response = requests.get(YOUTUBE_SEARCH_URL, params=search_params)
@@ -96,17 +95,17 @@ if st.button("\ud83d\ude80 Find Trending Topics"):
                     })
 
             if all_results:
-                st.success(f"\u2705 Found {len(all_results)} trending business videos!")
+                st.success(f"Found {len(all_results)} trending videos for: {niche}")
                 for result in all_results:
                     st.markdown(
-                        f"**\ud83c\udfac Title:** {result['Title']}  \n"
-                        f"**\ud83d\udcdd Description:** {result['Description']}  \n"
-                        f"**\ud83d\udd17 URL:** [Watch Video]({result['URL']})  \n"
-                        f"\ud83d\udc41\ufe0f Views:** {result['Views']} &nbsp;&nbsp; \ud83d\udc65 **Subscribers:** {result['Subscribers']:,}"
+                        f"**Title:** {result['Title']}  \n"
+                        f"**Description:** {result['Description']}  \n"
+                        f"**URL:** [Watch Video]({result['URL']})  \n"
+                        f"Views: {result['Views']} | Subscribers: {result['Subscribers']:,}"
                     )
                     st.write("---")
             else:
-                st.warning("\ud83d\udeab No trending business videos found for this niche. Try a broader topic!")
+                st.warning("No business-related viral videos found for this niche.")
 
         except Exception as e:
-            st.error(f"\u274c Error: {e}")
+            st.error(f"Error: {e}")
