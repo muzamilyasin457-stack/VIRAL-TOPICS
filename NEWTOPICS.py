@@ -9,37 +9,44 @@ YOUTUBE_VIDEO_URL = "https://www.googleapis.com/youtube/v3/videos"
 YOUTUBE_CHANNEL_URL = "https://www.googleapis.com/youtube/v3/channels"
 
 # App Title
-st.title("📈 YouTube Viral Business Topic Finder")
+st.title("📈 YouTube Viral Business Topic Finder (English Only, Long Form)")
 
 # Inputs
-niche = st.text_input("🎯 Enter a Specific Business Niche (e.g. 'Startup Collapse', 'Tech CEO Drama', 'Adobe AI Scandal'):")
+# niche = st.text_input("🎯 Enter a Specific Business Niche (e.g. 'Startup Collapse', 'Tech CEO Drama', 'Adobe AI Scandal'):")
 days = st.number_input("🗓️ Enter Days to Search (1-30):", min_value=1, max_value=30, value=5)
 
-# Premium Business Keyword List
+# Enhanced business keywords
+premium_keywords = [
+    "Nvidia vs AMD AI war",
+    "OpenAI Google rivalry explained",
+    "Why Google is losing AI race",
+    "Adobe AI copyright controversy",
+    "Startup collapses 2025",
+    "Big Tech monopoly drama",
+    "CEO fired over AI decision",
+    "Business betrayal 2025",
+    "Tech companies fighting over AI",
+    "Apple vs Meta AI innovation war",
+    "Bankrupt tech unicorns 2025",
+    "WeWork collapse explained",
+    "Silicon Valley downfall",
+    "Big Tech layoffs explained",
+    "Amazon AI project failure",
+    "Tesla under pressure from AI rivals"
+]
+
+base_phrases = [
+    "collapse explained", "startup failure", "company scandal",
+    "CEO controversy", "AI business war", "business takeover",
+    "corporate drama", "company shutdown", "corporate failure",
+    "leadership scandal", "merger fallout"
+]
+
 def generate_keywords(niche):
-    premium_keywords = [
-        "Nvidia vs AMD AI war",
-        "OpenAI Google rivalry explained",
-        "Why Google is losing AI race",
-        "Adobe AI copyright controversy",
-        "Startup collapses 2025",
-        "Big Tech monopoly drama",
-        "CEO fired over AI decision",
-        "Business betrayal 2025",
-        "Tech companies fighting over AI",
-        "Apple vs Meta AI innovation war",
-        "Bankrupt tech unicorns 2025",
-        "WeWork collapse explained",
-        "Silicon Valley downfall",
-        "Big Tech layoffs explained",
-        "Amazon AI project failure",
-        "Tesla under pressure from AI rivals"
-    ]
-    return premium_keywords + [f"{niche} {phrase}" for phrase in [
-        "collapse explained", "startup failure", "company scandal", "CEO controversy",
-        "AI business war", "business takeover", "corporate drama", "company shutdown",
-        "corporate failure", "leadership scandal", "merger fallout"
-    ]]
+    results = premium_keywords.copy()
+    for phrase in base_phrases:
+        results.append(f"{niche} {phrase}")
+    return results
 
 if st.button("🚀 Find Trending Business Topics"):
     if not niche:
@@ -61,8 +68,8 @@ if st.button("🚀 Find Trending Business Topics"):
                     "publishedAfter": start_date,
                     "maxResults": 5,
                     "relevanceLanguage": "en",
-                    "videoDuration": "any",
                     "regionCode": "US",
+                    "videoDuration": "medium",
                     "key": API_KEY,
                 }
 
@@ -103,15 +110,7 @@ if st.button("🚀 Find Trending Business Topics"):
                     views = int(stat["statistics"].get("viewCount", 0))
                     subs = int(channel_info.get("statistics", {}).get("subscriberCount", 0))
 
-                    # Filter duration (ISO 8601 duration to seconds)
-                    duration_raw = stat["contentDetails"]["duration"]
-                    import isodate
-                    try:
-                        duration = isodate.parse_duration(duration_raw).total_seconds()
-                    except:
-                        duration = 0
-
-                    if 120 <= duration and 1000 <= views and 1000 <= subs <= 500000:
+                    if 1000 <= views and 1000 <= subs <= 500000:
                         all_results.append({
                             "Title": title,
                             "Description": description,
@@ -122,7 +121,7 @@ if st.button("🚀 Find Trending Business Topics"):
                         })
 
             if all_results:
-                st.success(f"✅ Found {len(all_results)} videos for niche: {niche}")
+                st.success(f"✅ Found {len(all_results)} trending business videos!")
                 for result in all_results:
                     st.markdown(
                         f"**🎬 Title:** {result['Title']}  \n"
@@ -132,7 +131,7 @@ if st.button("🚀 Find Trending Business Topics"):
                     )
                     st.write("---")
             else:
-                st.warning("No trending business videos found. Try a more specific niche like 'Startup Collapse' or 'AI Drama'.")
+                st.warning("No trending business videos found. Try a different or more specific keyword.")
 
         except Exception as e:
             st.error(f"❌ Error: {e}")
