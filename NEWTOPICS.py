@@ -9,25 +9,25 @@ YOUTUBE_VIDEO_URL = "https://www.googleapis.com/youtube/v3/videos"
 YOUTUBE_CHANNEL_URL = "https://www.googleapis.com/youtube/v3/channels"
 
 # App Title
-st.title("YouTube Viral Business Topic Finder")
+st.title("📈 YouTube Viral Business Topic Finder")
 
 # Inputs
-niche = st.text_input("🎯 Enter Your Business Niche (e.g. 'Startup Collapse', 'Tech Company Drama'):")
+niche = st.text_input("🎯 Enter a Specific Business Niche (e.g. 'Startup Collapse', 'Tech CEO Drama', 'Adobe AI Scandal'):")
 days = st.number_input("🗓️ Enter Days to Search (1-30):", min_value=1, max_value=30, value=5)
 
-# Generate business-specific keywords
+# Generate specific business-focused keywords
 def generate_keywords(niche):
     base_phrases = [
-        "company collapse", "startup failure", "business downfall",
-        "tech company scandal", "CEO controversy", "AI business war",
-        "business takeover", "business drama", "company shutdown",
+        "collapse explained", "startup failure", "business downfall",
+        "company scandal", "CEO controversy", "AI business war",
+        "business takeover", "corporate drama", "company shutdown",
         "corporate failure", "leadership scandal", "merger fallout"
     ]
-    return [f"{niche} {phrase}" for phrase in base_phrases]
+    return [f"{niche} {phrase}" for phrase in base_phrases if niche.lower() not in phrase.lower()]
 
 if st.button("🚀 Find Trending Business Topics"):
     if not niche:
-        st.warning("Please enter a business niche to proceed.")
+        st.warning("Please enter a specific business niche (e.g. 'Startup Collapse', 'Tech Drama').")
     else:
         try:
             keywords = generate_keywords(niche)
@@ -43,8 +43,10 @@ if st.button("🚀 Find Trending Business Topics"):
                     "type": "video",
                     "order": "viewCount",
                     "publishedAfter": start_date,
-                    "maxResults": 5,
+                    "videoDuration": "medium",
                     "relevanceLanguage": "en",
+                    "regionCode": "US",
+                    "maxResults": 5,
                     "key": API_KEY,
                 }
 
@@ -64,7 +66,7 @@ if st.button("🚀 Find Trending Business Topics"):
                 # Fetch video and channel stats
                 stats_data = requests.get(
                     YOUTUBE_VIDEO_URL,
-                    params={"part": "statistics,contentDetails", "id": ",".join(video_ids), "key": API_KEY}
+                    params={"part": "statistics", "id": ",".join(video_ids), "key": API_KEY}
                 ).json()
 
                 channel_data = requests.get(
@@ -85,12 +87,7 @@ if st.button("🚀 Find Trending Business Topics"):
                     views = int(stat["statistics"].get("viewCount", 0))
                     subs = int(channel_info.get("statistics", {}).get("subscriberCount", 0))
 
-                    # Convert ISO 8601 duration to seconds
-                    import isodate
-                    duration = isodate.parse_duration(stat["contentDetails"]["duration"])
-                    duration_minutes = duration.total_seconds() / 60
-
-                    if duration_minutes >= 2 and 1000 <= views and 1000 <= subs <= 500000:
+                    if 1000 <= views and 1000 <= subs <= 500000:
                         all_results.append({
                             "Title": title,
                             "Description": description,
@@ -111,7 +108,7 @@ if st.button("🚀 Find Trending Business Topics"):
                     )
                     st.write("---")
             else:
-                st.warning("No trending business videos found for this niche.")
+                st.warning("No trending business videos found. Try a more specific niche like 'Startup Collapse' or 'AI Drama'.")
 
         except Exception as e:
             st.error(f"❌ Error: {e}")
